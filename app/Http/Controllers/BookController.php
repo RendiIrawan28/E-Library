@@ -62,17 +62,14 @@ class BookController extends Controller
     }
 
     // pencarian buku
-    public function search(Request $request)
+    public function json(Request $request)
     {
-        $query = $request->input('query');
-
-        // Cari buku berdasarkan title, author, atau category
-        $book = Book::where('title', 'LIKE', "%$query%")
-            ->orWhere('author', 'LIKE', "%$query%")
-            ->orWhere('category', 'LIKE', "%$query%")
-            ->get();
-
-        return response()->json($book);
+        $query = $request->search;
+        $books = Book::where('title', 'like', '%' . $query . '%')
+                    ->orWhere('author', 'like', '%' . $query . '%')
+                    ->get();
+    
+        return response()->json($books);
     }
 
 

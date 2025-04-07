@@ -20,6 +20,9 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('welcome');
 });
+Route::get('/test', function () {
+    return view('books.test');
+});
 
 // Halaman utama daftar buku
 Route::get('/books', [BookController::class, 'index'])->name('books.index');
@@ -37,7 +40,8 @@ Route::post('/books', [BookController::class, 'store'])->name('books.store');
 Route::get('/books/{id}', [BookController::class, 'show'])->name('books.show');
 
 //search
-Route::get('/books/search', [BookController::class, 'search'])->name('books.search');
+Route::get('/books/search', [BookController::class, 'json'])->name('siswa.books.json');
+Route::get('/siswa/books/json', [BookController::class, 'json'])->name('siswa.books.json');
 
 // API untuk memperbarui buku
 Route::put('/books/{id}', [BookController::class, 'update'])->name('books.update');
