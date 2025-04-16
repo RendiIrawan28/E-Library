@@ -15,6 +15,10 @@ class BookController extends Controller
     {
         return view('books.index');
     }
+    public function siswaIndex()
+    {
+        return view('books.test');
+    }
 
     /**
      * Tampilkan halaman tambah buku.

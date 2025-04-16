@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\BookController;
+use Illuminate\Support\Facades\Auth;
 
 use Illuminate\Support\Facades\Route;
 
@@ -20,43 +21,58 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('welcome');
 });
-Route::get('/test', function () {
-    return view('books.test');
-});
 
-// Halaman utama daftar buku
-Route::get('/books', [BookController::class, 'index'])->name('books.index');
+// Redirect setelah login
+Route::get('/redirect', function () {
+    $user = Auth::user();
+    return match ($user->role) {
+        'admin' => redirect('/admin/dashboard'),
+        'siswa' => redirect('/siswa/books'),
+        default => abort(403, 'Role tidak dikenali.'),
+    };
+})->middleware(['auth'])->name('redirect');
 
-// Halaman tambah buku
-Route::get('/books/create', [BookController::class, 'create'])->name('books.create');
 
-// API untuk mengambil semua buku (untuk AJAX)
-Route::get('/books/fetch', [BookController::class, 'fetch'])->name('books.fetch');
+// =================== AUTH DAN PROFILE ===================
+Route::middleware(['auth', 'verified'])->group(function () {
+    // Halaman dashboard umum
+    Route::get('/dashboard', function () {
+        return view('dashboard');
+    })->name('dashboard');
 
-// API untuk menyimpan buku baru
-Route::post('/books', [BookController::class, 'store'])->name('books.store');
-
-// API untuk melihat detail buku
-Route::get('/books/{id}', [BookController::class, 'show'])->name('books.show');
-
-//search
-Route::get('/books/search', [BookController::class, 'json'])->name('siswa.books.json');
-Route::get('/siswa/books/json', [BookController::class, 'json'])->name('siswa.books.json');
-
-// API untuk memperbarui buku
-Route::put('/books/{id}', [BookController::class, 'update'])->name('books.update');
-
-// API untuk menghapus buku
-Route::delete('/books/{id}', [BookController::class, 'destroy'])->name('books.destroy');
-
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
-
-Route::middleware('auth')->group(function () {
+    // Profile
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
+
+
+// =================== ADMIN ROUTE ===================
+Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
+   
+    // Route::get('/dashboard', function () {
+    //     return view('admin.dashboard');
+    // })->name('admin.dashboard');
+
+    // Manajemen Buku (CRUD)
+    Route::get('/books', [BookController::class, 'index'])->name('books.index');
+    Route::get('/books/create', [BookController::class, 'create'])->name('books.create');
+    Route::post('/books', [BookController::class, 'store'])->name('books.store');
+    Route::get('/books/fetch', [BookController::class, 'fetch'])->name('books.fetch'); // AJAX
+    Route::get('/books/{id}', [BookController::class, 'show'])->name('books.show');
+    Route::put('/books/{id}', [BookController::class, 'update'])->name('books.update');
+    Route::delete('/books/{id}', [BookController::class, 'destroy'])->name('books.destroy');
+});
+
+
+// =================== SISWA ROUTE ===================
+Route::middleware(['auth', 'role:siswa'])->prefix('siswa')->group(function () {
+    // Daftar buku dengan AJAX + Search
+    Route::get('/books', [BookController::class, 'siswaIndex'])->name('siswa.books.index');
+    Route::get('/books/json', [BookController::class, 'json'])->name('siswa.books.json');
+
+    // Membaca buku
+    Route::get('/books/{id}/read', [BookController::class, 'read'])->name('siswa.books.read');
 });
 
 require __DIR__.'/auth.php';
