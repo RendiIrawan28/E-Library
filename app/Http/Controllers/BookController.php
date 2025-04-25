@@ -42,28 +42,28 @@ class BookController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'title' => 'required|string|max:255',
             'author' => 'required|string|max:255',
-            'category' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'file' => 'required|mimes:pdf,epub|max:2048'
+            'category' => 'required|string|max:100',
+            'description' => 'required|string',
+            'file' => 'required|file|mimes:pdf,epub|max:5120', // max 5MB
         ]);
 
-        // Simpan file ke storage
-        $filePath = $request->file('file')->store('books', 'public');
+        // Simpan file dan data buku
+        $path = $request->file('file')->store('books', 'public');
 
-        // Simpan data buku ke database
-        $book = Book::create([
-            'title' => $request->title,
-            'author' => $request->author,
-            'category' => $request->category,
-            'description' => $request->description ?? '',
-            'file_path' => $filePath
+        Book::create([
+            'title' => $validated['title'],
+            'author' => $validated['author'],
+            'category' => $validated['category'],
+            'description' => $validated['description'],
+            'file_path' => $path,
         ]);
 
-        return response()->json(['message' => 'Buku berhasil ditambahkan', 'book' => $book], 201);
+        return response()->json(['message' => 'Buku berhasil disimpan.'], 200);
     }
+
 
     // pencarian buku
     public function json(Request $request)
@@ -98,33 +98,39 @@ class BookController extends Controller
      */
     public function update(Request $request, $id)
     {
+        $request->validate([
+            'title'       => 'required|string|max:255',
+            'author'      => 'required|string|max:255',
+            'category'    => 'required|string|max:100',
+            'description' => 'required|string',
+            'file'        => 'nullable|mimes:pdf,epub|max:5120',
+        ]);
+
         $book = Book::findOrFail($id);
 
-        $request->validate([
-            'title' => 'required|string|max:255',
-            'author' => 'required|string|max:255',
-            'category' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'file' => 'nullable|mimes:pdf,epub|max:2048'
-        ]);
-
-        // Perbarui data buku
-        $book->update([
-            'title' => $request->title,
-            'author' => $request->author,
-            'category' => $request->category,
-            'description' => $request->description ?? $book->description
-        ]);
-
-        // Jika ada file baru, hapus yang lama dan simpan yang baru
+        // Jika user upload file baru, hapus file lama dan simpan yang baru
         if ($request->hasFile('file')) {
-            Storage::disk('public')->delete($book->file_path);
+            // Hapus file lama kalau ada
+            if ($book->file_path && Storage::disk('public')->exists($book->file_path)) {
+                Storage::disk('public')->delete($book->file_path);
+            }
+
+            // Simpan file baru
             $filePath = $request->file('file')->store('books', 'public');
-            $book->update(['file_path' => $filePath]);
+            $book->file_path = $filePath;
         }
 
-        return response()->json(['message' => 'Buku berhasil diperbarui', 'book' => $book]);
+        $book->update([
+            'title'       => $request->title,
+            'author'      => $request->author,
+            'category'    => $request->category,
+            'description' => $request->description,
+            'file_path'   => $book->file_path, // bisa saja tetap yang lama
+        ]);
+
+        return response()->json(['message' => 'Buku berhasil diperbarui']);
     }
+
 
     /**
      * Hapus buku dari database.
