@@ -23,14 +23,16 @@ Route::get('/', function () {
 });
 
 // Manajemen Buku (CRUD)
-
+Route::get('/books', [BookController::class, 'index'])->name('books.index');
 Route::get('/books/create', [BookController::class, 'create'])->name('books.create');
 Route::post('/books', [BookController::class, 'store'])->name('books.store');
 Route::get('/books/fetch', [BookController::class, 'fetch'])->name('books.fetch'); // AJAX
 Route::delete('/books/{id}', [BookController::class, 'destroy'])->name('books.destroy');
 Route::get('/books/{id}', [BookController::class, 'show'])->name('books.show');
 
-Route::post('/books/update/{id}', [BookController::class, 'update'])->name('books.update');
+Route::get('/books/{id}/edit', [BookController::class, 'edit'])->name('books.edit');
+Route::post('/books/{id}', [BookController::class, 'update'])->name('books.update');
+
 
 // Redirect setelah login
 Route::get('/redirect', function () {
