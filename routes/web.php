@@ -19,13 +19,18 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    return view('auth.login');
 });
 
+// Manajemen Buku (CRUD)
 
+Route::get('/books/create', [BookController::class, 'create'])->name('books.create');
+Route::post('/books', [BookController::class, 'store'])->name('books.store');
+Route::get('/books/fetch', [BookController::class, 'fetch'])->name('books.fetch'); // AJAX
 Route::delete('/books/{id}', [BookController::class, 'destroy'])->name('books.destroy');
 Route::get('/books/{id}', [BookController::class, 'show'])->name('books.show');
-Route::put('/books/edit/{id}', [BookController::class, 'update'])->name('books.update');
+
+Route::post('/books/update/{id}', [BookController::class, 'update'])->name('books.update');
 
 // Redirect setelah login
 Route::get('/redirect', function () {
@@ -59,11 +64,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
         return view('books.index');
     })->name('admin.dashboard');
 
-    // Manajemen Buku (CRUD)
-    Route::get('/books', [BookController::class, 'index'])->name('books.index');
-    Route::get('/books/create', [BookController::class, 'create'])->name('books.create');
-    Route::post('/books', [BookController::class, 'store'])->name('books.store');
-    Route::get('/books/fetch', [BookController::class, 'fetch'])->name('books.fetch'); // AJAX
+
     
 });
 

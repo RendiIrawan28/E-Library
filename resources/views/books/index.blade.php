@@ -80,12 +80,12 @@
                     url: '/books/' + id,
                     type: 'GET',
                     success: function(book) {
-                        $('#editId').val(book.id);
-                        $('#editTitle').val(book.title);
-                        $('#editAuthor').val(book.author);
-                        $('#editCategory').val(book.category);
-                        $('#editDescription').val(book.description);
-                        $('#editBookModal').modal('show');
+                        $('#edit_book_id').val(book.id);
+                        $('#edit_title').val(book.title);
+                        $('#edit_author').val(book.author);
+                        $('#edit_category').val(book.category);
+                        $('#edit_description').val(book.description);
+                        $('#editModal').modal('show');
                     }
                 });
             }
@@ -94,25 +94,26 @@
             $('#editBookForm').on('submit', function(e) {
                 e.preventDefault();
 
-                var id = $('#editId').val();
-                var formData = new FormData(this);
+                let id = $('#edit_book_id').val();
+                let formData = new FormData(this);
 
                 $.ajax({
-                    url: '/books/edit/' + id,
-                    type: 'POST',
+                    url: `/books/update/${id}`,
+                    method: 'POST',
                     data: formData,
                     contentType: false,
                     processData: false,
-                    headers: {
-                        'X-HTTP-Method-Override': 'PUT'
-                    },
-                    success: function() {
-                        alert('Buku berhasil diperbarui!');
-                        $('#editBookModal').modal('hide');
-                        fetchBooks(); // reload data
+                    success: function(res) {
+                        if (res.success) {
+                            $('#editModal').modal('hide');
+                            alert(res.message);
+                            fetchBooks();
+                        } else {
+                            alert(res.message);
+                        }
                     },
                     error: function(xhr) {
-                        alert('Gagal memperbarui buku: ' + xhr.responseJSON.message);
+                        alert("Terjadi kesalahan saat menyimpan.");
                     }
                 });
             });
@@ -121,42 +122,41 @@
     </script>
 
     <!-- Modal Edit Buku -->
-    <div class="modal fade" id="editBookModal" tabindex="-1" aria-labelledby="editBookLabel" aria-hidden="true">
+    <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <form id="editBookForm" enctype="multipart/form-data">
                 @csrf
-                @method('PUT')
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title">Edit Buku</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                        <h5 class="modal-title" id="editModalLabel">Edit Buku</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body">
-                        <input type="hidden" name="id" id="editId">
+                        <input type="hidden" name="book_id" id="edit_book_id">
                         <div class="mb-3">
-                            <label for="editTitle" class="form-label">Judul</label>
-                            <input type="text" name="title" class="form-control" id="editTitle" required>
+                            <label>Judul</label>
+                            <input type="text" name="title" id="edit_title" class="form-control" required>
                         </div>
                         <div class="mb-3">
-                            <label for="editAuthor" class="form-label">Penulis</label>
-                            <input type="text" name="author" class="form-control" id="editAuthor" required>
+                            <label>Penulis</label>
+                            <input type="text" name="author" id="edit_author" class="form-control" required>
                         </div>
                         <div class="mb-3">
-                            <label for="editCategory" class="form-label">Kategori</label>
-                            <input type="text" name="category" class="form-control" id="editCategory" required>
+                            <label>Kategori</label>
+                            <input type="text" name="category" id="edit_category" class="form-control" required>
                         </div>
                         <div class="mb-3">
-                            <label for="editDescription" class="form-label">Deskripsi</label>
-                            <textarea name="description" class="form-control" id="editDescription" rows="3" required></textarea>
+                            <label>Deskripsi</label>
+                            <textarea name="description" id="edit_description" class="form-control" required></textarea>
                         </div>
                         <div class="mb-3">
-                            <label for="editFile" class="form-label">Ganti File (opsional)</label>
-                            <input type="file" name="file" class="form-control" id="editFile" accept=".pdf,.epub">
+                            <label>File (PDF/EPUB)</label>
+                            <input type="file" name="file" class="form-control">
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-success">Simpan Perubahan</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
                     </div>
                 </div>
             </form>

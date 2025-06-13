@@ -98,38 +98,42 @@ class BookController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $request->validate([
-            'title'       => 'required|string|max:255',
-            'author'      => 'required|string|max:255',
-            'category'    => 'required|string|max:100',
-            'description' => 'required|string',
-            'file'        => 'nullable|mimes:pdf,epub|max:5120',
-        ]);
+        try {
+            $book = Book::findOrFail($id);
 
-        $book = Book::findOrFail($id);
+            $request->validate([
+                'title' => 'required|string|max:255',
+                'author' => 'required|string|max:255',
+                'category' => 'required|string|max:100',
+                'description' => 'required|string',
+                'file' => 'nullable|mimes:pdf,epub|max:2048',
+            ]);
 
-        // Jika user upload file baru, hapus file lama dan simpan yang baru
-        if ($request->hasFile('file')) {
-            // Hapus file lama kalau ada
-            if ($book->file_path && Storage::disk('public')->exists($book->file_path)) {
-                Storage::disk('public')->delete($book->file_path);
+            $book->title = $request->title;
+            $book->author = $request->author;
+            $book->category = $request->category;
+            $book->description = $request->description;
+
+            // Jika ada file baru diupload
+            if ($request->hasFile('file')) {
+                // Hapus file lama
+                if ($book->file_path && Storage::exists($book->file_path)) {
+                    Storage::delete($book->file_path);
+                }
+
+                $file = $request->file('file');
+                $path = $file->store('books');
+                $book->file_path = $path;
             }
 
-            // Simpan file baru
-            $filePath = $request->file('file')->store('books', 'public');
-            $book->file_path = $filePath;
+            $book->save();
+
+            return response()->json(['success' => true, 'message' => 'Buku berhasil diperbarui']);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Gagal memperbarui buku: ' . $e->getMessage()], 500);
         }
-
-        $book->update([
-            'title'       => $request->title,
-            'author'      => $request->author,
-            'category'    => $request->category,
-            'description' => $request->description,
-            'file_path'   => $book->file_path, // bisa saja tetap yang lama
-        ]);
-
-        return response()->json(['message' => 'Buku berhasil diperbarui']);
     }
+
 
 
     /**

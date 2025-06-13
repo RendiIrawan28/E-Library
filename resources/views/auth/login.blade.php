@@ -1,8 +1,9 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container d-flex justify-content-center align-items-center" style="height: 100vh;">
+<div class="container d-flex justify-content-center align-items-center" style="height: 70vh;">
     <div class="col-md-4">
+        <img src="{{ asset('images/logo.jpg') }}" alt="Logo" class="mb-3 mx-auto d-block img-fluid" style="max-width: 250px;">
         <h2 class="text-center">Login</h2>
         @if (session('error'))
             <div class="alert alert-danger">{{ session('error') }}</div>
