@@ -34,6 +34,7 @@ Route::get('/books/{id}/edit', [BookController::class, 'edit'])->name('books.edi
 Route::post('/books/{id}', [BookController::class, 'update'])->name('books.update');
 
 
+
 // Redirect setelah login
 Route::get('/redirect', function () {
     $user = Auth::user();

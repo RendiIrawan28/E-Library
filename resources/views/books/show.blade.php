@@ -17,8 +17,28 @@
             <input type="text" name="author" class="form-control" value="{{ $book->author }}">
         </div>
         <div class="mb-3">
-            <label>Kategori</label>
-            <input type="text" name="category" class="form-control" value="{{ $book->category }}">
+            <label for="kelas" class="form-label">Kelas Rekomendasi</label>
+            <select name="kelas" class="form-select" required>
+                <option value="">-- Pilih Kelas --</option>
+                <option value="7">Kelas 7</option>
+                <option value="8">Kelas 8</option>
+                <option value="9">Kelas 9</option>
+            </select>
+        </div>
+        <div class="mb-3">
+            <label for="category" class="form-label">Kategori</label>
+            <select name="category" class="form-select" required>
+                <option value="Fiksi" {{ $book->category == 'Fiksi' ? 'selected' : '' }}>📖 Fiksi</option>
+                <option value="Non-Fiksi" {{ $book->category == 'Non-Fiksi' ? 'selected' : '' }}>📚 Non-Fiksi</option>
+                <option value="Pelajaran" {{ $book->category == 'Pelajaran' ? 'selected' : '' }}>📘 Pelajaran</option>
+                <option value="Komik" {{ $book->category == 'Komik' ? 'selected' : '' }}>🧑‍🎨 Komik</option>
+                <option value="Biografi" {{ $book->category == 'Biografi' ? 'selected' : '' }}>👤 Biografi</option>
+            </select>
+        </div>
+        <div class="mb-3">
+            <label for="publication_date" class="form-label">Tanggal Terbit</label>
+            <input type="date" name="publication_date" class="form-control"
+                   value="{{ $book->publication_date ? $book->publication_date->format('Y-m-d') : '' }}" required>
         </div>
         <div class="mb-3">
             <label>Deskripsi</label>
